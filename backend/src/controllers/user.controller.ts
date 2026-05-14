@@ -5,6 +5,7 @@ export const userController = {
   async me(req: Request, res: Response, next: NextFunction) {
     try {
       const user = await userService.getById(req.user!.id);
+
       res.json(user);
     } catch (err) {
       next(err);

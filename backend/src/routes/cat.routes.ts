@@ -11,6 +11,7 @@ export const catRouter = Router();
 catRouter.use(authenticate);
 
 catRouter.get("/", catController.list);
-catRouter.get("/:id", catController.getById);
+catRouter.get("/nearby", catController.nearby);
 catRouter.post("/register", upload.array("files", 5), catController.register);
 catRouter.post("/identify", upload.single("file"), catController.identify);
+catRouter.get("/:id", catController.getById);

@@ -19,9 +19,9 @@ export const CatCard = ({ cat }: { cat: Cat }) => {
           {cat.breed}
         </Text>
         <Text style={styles.cardBreed} numberOfLines={1}>
-          {cat.created_at
-            ? `${new Date(cat.created_at).toLocaleDateString("pt-BR")} às ${new Date(
-                cat.created_at,
+          {cat.createdAt
+            ? `${new Date(cat.createdAt).toLocaleDateString("pt-BR")} às ${new Date(
+                cat.createdAt,
               ).toLocaleTimeString("pt-BR", {
                 hour: "2-digit",
                 minute: "2-digit",

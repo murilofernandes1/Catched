@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 """
 Embedding Microservice — MegaDescriptor-T-224
 =============================================
@@ -166,7 +169,7 @@ class EmbeddingResponse(BaseModel):
 
 class CatEmbedding(BaseModel):
     """Embedding de um gato já cadastrado, enviado pelo backend Node."""
-    cat_id: int
+    cat_id: str
     name: str
     embeddings: list[list[float]]       # todos os embeddings das fotos cadastradas
     locations: list[dict] = []           # [{"lat": float, "lon": float}, ...]
@@ -180,7 +183,7 @@ class IdentifyRequest(BaseModel):
 
 class IdentifyResponse(BaseModel):
     found: bool
-    cat_id: Optional[int] = None
+    cat_id: Optional[str] = None
     name: Optional[str] = None
     similarity: Optional[float] = None
     confidence: Optional[str] = None
@@ -218,21 +221,20 @@ def health():
 
 @app.post("/embed", response_model=EmbeddingResponse)
 async def embed(file: UploadFile = File(...)):
-    """
-    Recebe uma imagem, gera o embedding e faz upload pro Cloudinary.
-    Chamado pelo backend Node no momento do cadastro de um gato.
-    """
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Arquivo deve ser uma imagem.")
+    print(f">>> CLOUDINARY_URL: '{CLOUDINARY_URL}'")
+    content = await file.read()
+    print(f">>> file size: {len(content)} bytes")
+    await file.seek(0)
 
     path = save_upload(file)
     try:
         embedding = get_embedding(path)
+        print(f">>> embedding gerado OK")
         image_url = await upload_to_cloudinary(path)
-    except HTTPException:
+        print(f">>> upload OK: {image_url}")
+    except Exception as e:
+        print(f">>> ERRO: {type(e).__name__}: {e}")
         raise
-    except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"Erro ao processar imagem: {exc}")
     finally:
         delete_file(path)
 
@@ -242,30 +244,26 @@ async def embed(file: UploadFile = File(...)):
 @app.post("/identify", response_model=IdentifyResponse)
 async def identify(
     file: UploadFile = File(...),
-    payload: str = Form(...),  # JSON string com IdentifyRequest
+    payload: str = Form(...),
 ):
-    """
-    Recebe uma imagem + lista de gatos cadastrados (com embeddings),
-    e retorna o melhor match.
-
-    O backend Node envia os embeddings salvos no banco — esse serviço
-    só faz a comparação, sem acessar o banco diretamente.
-    """
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Arquivo deve ser uma imagem.")
-
     try:
+        print(f">>> content_type: {file.content_type}")
         request_data = IdentifyRequest(**json.loads(payload))
-    except Exception:
-        raise HTTPException(status_code=400, detail="Payload inválido.")
+        print(f">>> parsed OK, cats: {len(request_data.cats)}")
+    except Exception as e:
+        print(f">>> ERRO parse: {type(e).__name__}: {e}")
+        raise
 
     path = save_upload(file)
     try:
         new_embedding = get_embedding(path)
-    except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"Erro ao processar imagem: {exc}")
+        print(f">>> embedding OK")
+    except Exception as e:
+        print(f">>> ERRO embedding: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=422, detail=str(e))
     finally:
         delete_file(path)
+
 
     # Filtra gatos por localização se disponível
     cats = request_data.cats

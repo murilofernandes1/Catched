@@ -8,7 +8,7 @@ export interface Cat {
   description: string;
   latitude: number;
   longitude: number;
-  created_at?: string;
+  createdAt?: string;
   user: UserProps;
 }
 
@@ -16,12 +16,10 @@ export interface CatCatchProps {
   name: string;
   breed: string;
   color: string;
-  image: string;
   description: string;
   latitude: number;
   longitude: number;
-  created_at?: string;
-  extra_images: string[];
+  createdAt?: string;
 }
 
 export type CatCardProps = {
@@ -34,7 +32,7 @@ export type CatCardProps = {
     description: string;
     latitude: number;
     longitude: number;
-    created_at?: string;
+    createdAt?: string;
     user: UserProps;
   };
 };
@@ -48,7 +46,7 @@ export type CollectionProps = {
   description: string;
   latitude: number;
   longitude: number;
-  created_at?: string;
+  createdAt?: string;
   user: UserProps;
 };
 
@@ -63,17 +61,19 @@ export interface CatOut {
   id: number;
   name: string;
   description: string | null;
-  created_at: string;
+  createdAt: string;
   photo_count: number;
 }
 
 export interface IdentifyResult {
   found: boolean;
+  cat_id?: string;
   cat?: Cat;
+  name?: string;
   similarity?: number;
   confidence?: "high" | "medium" | "low";
+  uncertain?: boolean;
 }
-
 export interface RegisterResult {
   cat: CatOut;
   message: string;

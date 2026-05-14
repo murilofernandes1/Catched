@@ -17,7 +17,7 @@ export default function Collection() {
           <Text style={styles.title}>Minha Coleção</Text>
         </View>
       </View>
-      {collectionData ? (
+      {collectionData.length > 0 ? (
         <FlatList
           data={collectionData}
           keyExtractor={(item) => item.id.toString()}
@@ -28,7 +28,9 @@ export default function Collection() {
           renderItem={({ item }) => <CatCard cat={item} />}
         />
       ) : (
-        <Text style={styles.emptyText}>Nenhum gato encontrado na coleção.</Text>
+        <Text style={styles.emptyText}>
+          Oops! Parece que você ainda não tem nenhum gato na coleção.
+        </Text>
       )}
     </View>
   );

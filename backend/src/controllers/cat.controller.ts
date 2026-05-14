@@ -5,7 +5,8 @@ import { catService } from "../services/cat.services.js";
 export const catController = {
   async register(req: Request, res: Response, next: NextFunction) {
     const files = req.files as Express.Multer.File[];
-
+    console.log(">>> files:", files);
+    console.log(">>> body:", req.body);
     if (!files || files.length === 0) {
       res.status(400).json({ error: "Envie ao menos uma foto." });
       return;
@@ -61,7 +62,7 @@ export const catController = {
         latitude: latitude ? parseFloat(latitude) : undefined,
         longitude: longitude ? parseFloat(longitude) : undefined,
       });
-
+      console.log(">>> identify result:", JSON.stringify(result));
       res.json(result);
     } catch (err) {
       next(err);
@@ -81,12 +82,33 @@ export const catController = {
 
   async getById(req: Request, res: Response, next: NextFunction) {
     try {
-      const cat = await catService.getById(req.user!.id);
+      const cat = await catService.getById(req.params.id as string);
       if (!cat) {
         res.status(404).json({ error: "Gato não encontrado." });
         return;
       }
       res.json(cat);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  async nearby(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { latitude, longitude } = req.query;
+
+      if (!latitude || !longitude) {
+        res
+          .status(400)
+          .json({ error: "latitude e longitude são obrigatórios." });
+        return;
+      }
+
+      const cats = await catService.findNearby(
+        parseFloat(latitude as string),
+        parseFloat(longitude as string),
+      );
+      res.json(cats);
     } catch (err) {
       next(err);
     }

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { View, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import Loading from "../../components/Loading";
@@ -10,7 +10,7 @@ import { useNavigation } from "@react-navigation/native";
 import { RootStackParamList } from "../../types/navigation-types";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { IdentifyResult } from "../../types/cat-types";
-
+import api from "../../services/api";
 import { PermissionScreen } from "./screens/PermissionScreen";
 import { LoadingScreen } from "./screens/LoadingScreen";
 import { RegisterScreen } from "./screens/RegisterScreen";
@@ -34,7 +34,10 @@ export default function CameraComponent() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { location } = useUserLocation();
-
+  const locationRef = useRef(location);
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
   const [photos, setPhotos] = useState<string[]>([]);
   const [screen, setScreen] = useState<Screen>("camera");
   const [loading, setLoading] = useState(false);
@@ -78,14 +81,22 @@ export default function CameraComponent() {
 
     try {
       const result = await identifyCat(newPhotos[0], {
-        latitude: location?.coords.latitude ?? 0,
-        longitude: location?.coords.longitude ?? 0,
+        latitude: locationRef.current?.coords.latitude ?? 0,
+        longitude: locationRef.current?.coords.longitude ?? 0,
       });
 
-      setIdentifyResult(result);
+      console.log(">>> result:", JSON.stringify(result));
+
+      if (result.found && result.cat_id) {
+        const catResponse = await api.get(`/cats/${result.cat_id}`);
+        setIdentifyResult({ ...result, cat: catResponse.data });
+      } else {
+        setIdentifyResult(result);
+      }
+
       setScreen(result.found ? "found" : "register");
     } catch (error) {
-      console.error(error);
+      console.error(">>> identify error:", error);
       setScreen("register");
     }
   };
@@ -102,21 +113,17 @@ export default function CameraComponent() {
     try {
       setLoading(true);
 
-      // Upload de todas as fotos em paralelo
-      const [mainUrl, ...extraUrls] = await Promise.all(
-        photos.map((uri) => uploadToCloudinary(uri)),
+      await registerCat(
+        {
+          name: form.name,
+          breed: form.breed,
+          color: form.color,
+          description: form.description,
+          longitude: location?.coords.longitude || 0,
+          latitude: location?.coords.latitude || 0,
+        },
+        photos,
       );
-
-      await registerCat({
-        name: form.name,
-        breed: form.breed,
-        color: form.color,
-        image: mainUrl,
-        extra_images: extraUrls,
-        description: form.description,
-        longitude: location?.coords.longitude || 0,
-        latitude: location?.coords.latitude || 0,
-      });
 
       setLoading(false);
       navigation.navigate("Collection");
@@ -125,7 +132,6 @@ export default function CameraComponent() {
       setLoading(false);
     }
   };
-
   if (!permission) return <View />;
   if (loading) return <Loading />;
   if (!permission.granted) {
@@ -136,10 +142,10 @@ export default function CameraComponent() {
     return <LoadingScreen photo={photos[0] ?? null} onClose={handleClose} />;
   }
 
-  if (screen === "found" && identifyResult?.cat) {
+  if (screen === "found" && identifyResult?.found && identifyResult?.cat) {
     return (
       <FoundScreen
-        cat={identifyResult.cat}
+        cat={identifyResult.cat!}
         similarity={identifyResult.similarity}
         confidence={identifyResult.confidence}
         photo={photos[0]!}

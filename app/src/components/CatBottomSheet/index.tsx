@@ -55,7 +55,7 @@ export const CatBottomSheet = ({ cat, onClose }: CatBottomSheetProps) => {
 
   if (!cat) return null;
 
-  const formatted = formatDate(cat.created_at);
+  const formatted = formatDate(cat.createdAt);
 
   return (
     <Modal

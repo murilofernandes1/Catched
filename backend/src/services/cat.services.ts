@@ -1,5 +1,5 @@
 import FormData from "form-data";
-import { default as fetch } from "node-fetch-native";
+import axios from "axios";
 import fs from "fs";
 import { catRepository } from "../repositories/cat.repository.js";
 
@@ -24,13 +24,11 @@ async function callEmbed(filePath: string): Promise<EmbedResponse> {
   const form = new FormData();
   form.append("file", fs.createReadStream(filePath), "cat.jpg");
 
-  const res = await fetch(`${EMBEDDING_URL}/embed`, {
-    method: "POST",
-    body: form as unknown as BodyInit,
+  const res = await axios.post(`${EMBEDDING_URL}/embed`, form, {
     headers: form.getHeaders(),
   });
-  if (!res.ok) throw new Error(`Embedding service error: ${res.status}`);
-  return res.json() as Promise<EmbedResponse>;
+
+  return res.data;
 }
 
 async function callIdentify(
@@ -48,13 +46,11 @@ async function callIdentify(
   form.append("file", fs.createReadStream(filePath), "cat.jpg");
   form.append("payload", JSON.stringify({ cats, latitude, longitude }));
 
-  const res = await fetch(`${EMBEDDING_URL}/identify`, {
-    method: "POST",
-    body: form as unknown as BodyInit,
+  const res = await axios.post(`${EMBEDDING_URL}/identify`, form, {
     headers: form.getHeaders(),
   });
-  if (!res.ok) throw new Error(`Embedding service error: ${res.status}`);
-  return res.json() as Promise<IdentifyResponse>;
+
+  return res.data;
 }
 
 export const catService = {
@@ -114,7 +110,7 @@ export const catService = {
         (p) => JSON.parse(p.embeddingJson) as number[],
       ),
       locations: cat.photos
-        .filter((p) => p.latitude && p.longitude)
+        .filter((p) => p.latitude !== null && p.longitude !== null)
         .map((p) => ({ lat: p.latitude!, lon: p.longitude! })),
     }));
 
@@ -128,4 +124,5 @@ export const catService = {
 
   listByUser: (userId: string) => catRepository.findByUser(userId),
   getById: (id: string) => catRepository.findById(id),
+  findNearby: (lat: number, lon: number) => catRepository.findNearby(lat, lon),
 };

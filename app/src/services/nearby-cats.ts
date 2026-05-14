@@ -7,8 +7,8 @@ export default async function nearbyCats(
 ): Promise<Cat[]> {
   const response = await api.get("/cats/nearby", {
     params: {
-      userLat,
-      userLong,
+      latitude: userLat,
+      longitude: userLong,
     },
   });
   return response.data;
