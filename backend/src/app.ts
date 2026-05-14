@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import "dotenv/config";
 
 import { authRouter } from "./routes/auth.routes.js";
 import { catRouter } from "./routes/cat.routes.js";
