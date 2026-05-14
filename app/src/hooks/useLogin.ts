@@ -6,10 +6,10 @@ import { LoginProps } from "../types/auth-types";
 export function useLogin() {
   const { setToken } = useAuth();
 
-  async function login({ username, password }: LoginProps) {
-    if (!username || !password) return;
+  async function login({ email, password }: LoginProps) {
+    if (!email || !password) return;
     try {
-      const token = await Login({ username, password });
+      const token = await Login({ email, password });
       await saveToken(token);
       setToken(token);
     } catch (error) {

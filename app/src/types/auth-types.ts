@@ -5,12 +5,12 @@ export type AuthContextType = {
 };
 
 export type LoginProps = {
-  username: string;
+  email: string;
   password: string;
 };
 export interface Response {
   data: {
-    access_token: string;
+    token: string;
   };
 }
 export type RegisterProps = {

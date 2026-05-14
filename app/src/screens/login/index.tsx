@@ -1,17 +1,11 @@
-import {
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-} from "react-native";
+import { Text, View, TextInput, TouchableOpacity } from "react-native";
 import { useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import { styles } from "./styles";
 import { useLogin } from "../../hooks/useLogin";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const login = useLogin();
@@ -33,8 +27,8 @@ export default function Login() {
               style={styles.input}
               placeholder="seu@email.com"
               placeholderTextColor="#ccc"
-              value={username}
-              onChangeText={setUsername}
+              value={email}
+              onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -68,7 +62,7 @@ export default function Login() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => login({ username, password })}
+          onPress={() => login({ email, password })}
           style={styles.loginButton}
           activeOpacity={0.85}
         >
