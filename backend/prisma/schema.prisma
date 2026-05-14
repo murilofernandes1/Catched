@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String
   email     String   @unique
   password  String
@@ -17,7 +17,7 @@ model User {
 }
 
 model Cat {
-  id          Int        @id @default(autoincrement())
+  id          String     @id @default(uuid())
   name        String
   breed       String
   color       String
@@ -26,14 +26,14 @@ model Cat {
   latitude    Float
   longitude   Float
   createdAt   DateTime   @default(now())
-  userId      Int
+  userId      String
   user        User       @relation(fields: [userId], references: [id])
   photos      CatPhoto[]
 }
 
 model CatPhoto {
-  id            Int      @id @default(autoincrement())
-  catId         Int
+  id            String   @id @default(uuid())
+  catId         String
   cat           Cat      @relation(fields: [catId], references: [id], onDelete: Cascade)
   filePath      String
   embeddingJson String

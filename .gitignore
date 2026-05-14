@@ -1,1 +1,15 @@
+
+venv/
+.venv/
+env/
+python_env/
+
+
+**/__pycache__/
+*.pyc
+
 .env
+**/.env
+.vscode
+
+**/node_modules/
